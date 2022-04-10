@@ -35,7 +35,7 @@ class LaracacheServiceProvider extends ServiceProvider
 
         // Register the service the package provides.
         $this->app->singleton('laracache', function ($app) {
-            return new Laracache;
+            return new Laracache();
         });
     }
 
