@@ -2,6 +2,9 @@
 
 namespace Insomnicles\Laracache;
 
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Cache;
+
 trait Cachable
 {
     // Build wonderful things
