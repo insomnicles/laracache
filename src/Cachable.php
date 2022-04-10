@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\Cache;
 
 trait Cachable
 {
-    // Build wonderful things
 
     public function hello()
     {
