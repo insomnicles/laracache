@@ -7,11 +7,6 @@ use Illuminate\Support\Facades\Cache;
 
 trait Cachable
 {
-    public function hello()
-    {
-        dd('hello');
-    }
-
     public static function allInCache(): Collection
     {
         $reflectionClass = new \ReflectionClass(self::class);
@@ -19,16 +14,33 @@ trait Cachable
 
         $id = 1;
         $models = new Collection();
+
         while (1) {
-            $modelStr = Cache::get($cacheKey.':'.$id);
-            if (is_null($modelStr)) {
+            $modelStr = Cache::get($cacheKey . ':' . $id);
+            if (is_null($modelStr))
                 break;
-            }
+
             $model = unserialize($modelStr);
             $models->put($model->id, $model);
             $id++;
         }
 
         return $models;
+    }
+
+    public static function refreshCache(int $fromId = 1, int $toId = null): void
+    {
+        $reflectionClass = new \ReflectionClass(self::class);
+        $cacheKey = $reflectionClass->getShortName();
+        $model = $reflectionClass->newInstanceWithoutConstructor();
+
+        if ($toId == null) {
+            $count = (self::class)::count();
+            $models = (self::class)::where([['id', '>=', $fromId], ['id', '<=', $count]])->get();
+        } else
+            $models = (self::class)::where([['id', '>=', $fromId], ['id', '<=', $toId]])->get();
+
+        foreach ($models as $model)
+            Cache::set($cacheKey . ":" . $model->id, serialize($model));
     }
 }
