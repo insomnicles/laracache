@@ -1,0 +1,41 @@
+{
+    "name": "insomnicles/laracache",
+    "description": "A trait for caching Laravel models",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "insomnicles",
+            "email": "author@email.com",
+            "homepage": "http://author.com"
+        }
+    ],
+    "homepage": "https://github.com/insomnicles/laracache",
+    "keywords": ["Laravel", "Laracache"],
+    "require": {
+        "illuminate/support": ">=9.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~9.0",
+        "orchestra/testbench": "8"
+    },
+    "autoload": {
+        "psr-4": {
+            "Insomnicles\\Laracache\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Insomnicles\\Laracache\\Tests\\": "tests"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Insomnicles\\Laracache\\LaracacheServiceProvider"
+            ],
+            "aliases": {
+                "Laracache": "Insomnicles\\Laracache\\Facades\\Laracache"
+            }
+        }
+    }
+}
