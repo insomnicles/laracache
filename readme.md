@@ -5,7 +5,7 @@
 [![Build Status][ico-travis]][link-travis]
 [![StyleCI][ico-styleci]][link-styleci]
 
-This is where your description should go. Take a look at [contributing.md](contributing.md) to see a to do list.
+A trait for accessing Laravel Eloquent models directly from Cache
 
 ## Installation
 
@@ -17,28 +17,30 @@ $ composer require insomnicles/laracache
 
 ## Usage
 
+Make sure your app is connected to a Cache: memcache, redis, etc.
+- If you're using Sail in Laravel 8+, this is setup out of the box
+
+
+Add the Cachable Trait to your Model; for example, for the User Model
+```
+	use Insomnicles\Laracache\Cachable.php
+
+	class User {
+		use Cachable;
+
+	}
+
+```
+
+Use the Cached Model via Eloquent-like methods
+```
+	User::refreshCache();
+	User::allInCache();
+```
+
 ## Change log
 
 Please see the [changelog](changelog.md) for more information on what has changed recently.
-
-## Testing
-
-``` bash
-$ composer test
-```
-
-## Contributing
-
-Please see [contributing.md](contributing.md) for details and a todolist.
-
-## Security
-
-If you discover any security related issues, please email author@email.com instead of using the issue tracker.
-
-## Credits
-
-- [insomnicles][link-author]
-- [All Contributors][link-contributors]
 
 ## License
 
