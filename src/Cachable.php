@@ -12,19 +12,24 @@ trait Cachable
         $reflectionClass = new \ReflectionClass(self::class);
         $cacheKey = $reflectionClass->getShortName();
 
+        $total = \App\Models\User::all()->count();
+        $count = 0;
         $id = 1;
+
         $models = new Collection();
 
         while (1) {
             $modelStr = Cache::get($cacheKey . ':' . $id);
-            if (is_null($modelStr))
-                break;
 
-            $model = unserialize($modelStr);
-            $models->put($model->id, $model);
+            if (!is_null($modelStr)) {
+                $model = unserialize($modelStr);
+                $models->put($model->id, $model);
+            }
+            $count++;
             $id++;
+            if ($count >= $total)
+                break;
         }
-
         return $models;
     }
 
