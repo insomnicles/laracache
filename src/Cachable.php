@@ -39,7 +39,6 @@ trait Cachable
         $reflectionClass = new \ReflectionClass(self::class);
         $cacheKey = $reflectionClass->getShortName();
         $modelStr = Cache::get($cacheKey.":".$id);
-
         return is_null($modelStr) ? null : unserialize($modelStr);
     }
 
@@ -62,6 +61,24 @@ trait Cachable
         $modelStr = Cache::get($cacheKey.":".$id);
 
         return is_null($modelStr) ? $reflectionClass->newInstanceWithoutConstructor() : unserialize($modelStr);
+    }
+
+    public function deleteInCache() : void
+    {
+        $reflectionClass = new \ReflectionClass(self::class);
+        $cacheKey = $reflectionClass->getShortName();
+        Cache::forget($cacheKey.":".$this->id);
+    }
+
+    public function deleteInCacheOrFail() : void
+    {
+        $reflectionClass = new \ReflectionClass(self::class);
+        $cacheKey = $reflectionClass->getShortName();
+
+        if (is_null(Cache::get($cacheKey.":".$this->id)))
+            throw new Exception('Model not Found in Cache');
+        else
+            Cache::forget($cacheKey.":".$this->id);
     }
 
     public static function refreshCache(int $fromId = 1, int $toId = null): void
