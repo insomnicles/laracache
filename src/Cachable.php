@@ -55,6 +55,15 @@ trait Cachable
             unserialize($modelStr);
     }
 
+    public static function findInCacheOrNew(int $id) : mixed
+    {
+        $reflectionClass = new \ReflectionClass(self::class);
+        $cacheKey = $reflectionClass->getShortName();
+        $modelStr = Cache::get($cacheKey.":".$id);
+
+        return is_null($modelStr) ? $reflectionClass->newInstanceWithoutConstructor() : unserialize($modelStr);
+    }
+
     public static function refreshCache(int $fromId = 1, int $toId = null): void
     {
         $reflectionClass = new \ReflectionClass(self::class);
