@@ -2,6 +2,7 @@
 
 namespace Insomnicles\Laracache;
 
+use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
 
@@ -40,6 +41,18 @@ trait Cachable
         $modelStr = Cache::get($cacheKey.":".$id);
 
         return is_null($modelStr) ? null : unserialize($modelStr);
+    }
+
+    public static function findInCacheOrFail(int $id) : mixed
+    {
+        $reflectionClass = new \ReflectionClass(self::class);
+        $cacheKey = $reflectionClass->getShortName();
+        $modelStr = Cache::get($cacheKey.":".$id);
+
+        if (is_null($modelStr))
+            throw new Exception('Model not found in cache');
+        else
+            unserialize($modelStr);
     }
 
     public static function refreshCache(int $fromId = 1, int $toId = null): void
