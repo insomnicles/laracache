@@ -63,6 +63,19 @@ trait Cachable
         return is_null($modelStr) ? $reflectionClass->newInstanceWithoutConstructor() : unserialize($modelStr);
     }
 
+    public function updateInCacheOrRefresh() : mixed
+    {
+        $reflectionClass = new \ReflectionClass(self::class);
+        $cacheKey = $reflectionClass->getShortName();
+        Cache::set($cacheKey.":".$this->id, serialize($this));
+        $modelStr = Cache::get($cacheKey.":".$this->id);
+        if (is_null($modelStr)) {
+            self::class::refreshCache();
+            $modelStr = Cache::get($cacheKey.":".$this->id);
+        }
+        return unserialize($modelStr);
+    }
+
     public function deleteInCache() : void
     {
         $reflectionClass = new \ReflectionClass(self::class);
