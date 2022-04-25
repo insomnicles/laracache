@@ -4,7 +4,7 @@ namespace Insomnicles\Laracache;
 
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Redis;
 
 trait Cachable
 {
@@ -12,24 +12,16 @@ trait Cachable
     {
         $reflectionClass = new \ReflectionClass(self::class);
         $cacheKey = $reflectionClass->getShortName();
-
-        $total = \App\Models\User::all()->count();
-        $count = 0;
-        $id = 1;
-
         $models = new Collection();
 
-        while (1) {
-            $modelStr = Cache::get($cacheKey . ':' . $id);
+        $keys = Redis::keys($cacheKey.":*");
+        for( $i = 0; $i < count($keys); $i++)
+            $keys[$i] = strstr($keys[$i],$cacheKey);
+        $values = Redis::mget($keys);
 
-            if (!is_null($modelStr)) {
-                $model = unserialize($modelStr);
-                $models->put($model->id, $model);
-            }
-            $count++;
-            $id++;
-            if ($count >= $total)
-                break;
+        foreach ($values as $value) {
+            $model = unserialize($value);
+            $models->put($model->id, $model);
         }
         return $models;
     }
@@ -38,7 +30,7 @@ trait Cachable
     {
         $reflectionClass = new \ReflectionClass(self::class);
         $cacheKey = $reflectionClass->getShortName();
-        $modelStr = Cache::get($cacheKey.":".$id);
+        $modelStr = Redis::get($cacheKey.":".$id);
         return is_null($modelStr) ? null : unserialize($modelStr);
     }
 
@@ -46,33 +38,63 @@ trait Cachable
     {
         $reflectionClass = new \ReflectionClass(self::class);
         $cacheKey = $reflectionClass->getShortName();
-        $modelStr = Cache::get($cacheKey.":".$id);
+        $modelStr = Redis::get($cacheKey.":".$id);
 
         if (is_null($modelStr))
             throw new Exception('Model not found in cache');
         else
-            unserialize($modelStr);
+            return unserialize($modelStr);
     }
 
     public static function findInCacheOrNew(int $id) : mixed
     {
         $reflectionClass = new \ReflectionClass(self::class);
         $cacheKey = $reflectionClass->getShortName();
-        $modelStr = Cache::get($cacheKey.":".$id);
+        $modelStr = Redis::get($cacheKey.":".$id);
 
         return is_null($modelStr) ? $reflectionClass->newInstanceWithoutConstructor() : unserialize($modelStr);
+    }
+
+    public function saveInCache() : mixed
+    {
+        $reflectionClass = new \ReflectionClass(self::class);
+        $cacheKey = $reflectionClass->getShortName();
+        Redis::set($cacheKey.":".$this->id, serialize($this));
+
+        $modelStr = Redis::get($cacheKey.":".$this->id);
+        if (is_null($modelStr)) {
+            self::class::refreshCache();
+            $modelStr = Redis::get($cacheKey.":".$this->id);
+        }
+        return unserialize($modelStr);
+    }
+
+    public function saveFromCache() : void
+    {
+        $reflectionClass = new \ReflectionClass(self::class);
+        $cacheKey = $reflectionClass->getShortName();
+        $modelStr = Redis::get($cacheKey.":".$this->id);
+
+        if (is_null($modelStr))
+            throw new Exception('Model not Found in Cache');
+
+        $model = unserialize($modelStr);
+        $model->save();
     }
 
     public function updateInCacheOrRefresh() : mixed
     {
         $reflectionClass = new \ReflectionClass(self::class);
         $cacheKey = $reflectionClass->getShortName();
-        Cache::set($cacheKey.":".$this->id, serialize($this));
-        $modelStr = Cache::get($cacheKey.":".$this->id);
+
+        Redis::set($cacheKey.":".$this->id, serialize($this));
+        $modelStr = Redis::get($cacheKey.":".$this->id);
+
         if (is_null($modelStr)) {
             self::class::refreshCache();
-            $modelStr = Cache::get($cacheKey.":".$this->id);
+            $modelStr = Redis::get($cacheKey.":".$this->id);
         }
+
         return unserialize($modelStr);
     }
 
@@ -80,7 +102,7 @@ trait Cachable
     {
         $reflectionClass = new \ReflectionClass(self::class);
         $cacheKey = $reflectionClass->getShortName();
-        Cache::forget($cacheKey.":".$this->id);
+        Redis::del( [ $cacheKey.":".$this->id ]);
     }
 
     public function deleteInCacheOrFail() : void
@@ -88,10 +110,10 @@ trait Cachable
         $reflectionClass = new \ReflectionClass(self::class);
         $cacheKey = $reflectionClass->getShortName();
 
-        if (is_null(Cache::get($cacheKey.":".$this->id)))
-            throw new Exception('Model not Found in Cache');
+        if (is_null(Redis::get($cacheKey.":".$this->id)))
+            throw new Exception('Model not Found in Redis');
         else
-            Cache::forget($cacheKey.":".$this->id);
+            Redis::del([ $cacheKey.":".$this->id ]);
     }
 
     public static function refreshCache(int $fromId = 1, int $toId = null): void
@@ -107,6 +129,6 @@ trait Cachable
             $models = (self::class)::where([['id', '>=', $fromId], ['id', '<=', $toId]])->get();
 
         foreach ($models as $model)
-            Cache::set($cacheKey . ":" . $model->id, serialize($model));
+            Redis::set($cacheKey . ":" . $model->id, serialize($model));
     }
 }
