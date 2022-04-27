@@ -15,8 +15,13 @@ trait Cachable
         $models = new Collection();
 
         $keys = Redis::keys($cacheKey.":*");
+
+        if (empty($keys))
+            return $models;
+
         for( $i = 0; $i < count($keys); $i++)
             $keys[$i] = strstr($keys[$i],$cacheKey);
+
         $values = Redis::mget($keys);
 
         foreach ($values as $value) {
@@ -115,6 +120,19 @@ trait Cachable
         else
             Redis::del([ $cacheKey.":".$this->id ]);
     }
+
+    public static function deleteAllInCache() : void
+    {
+        $reflectionClass = new \ReflectionClass(self::class);
+        $cacheKey = $reflectionClass->getShortName();
+
+        $keys = Redis::keys($cacheKey.":*");
+        for( $i = 0; $i < count($keys); $i++)
+            $keys[$i] = strstr($keys[$i],$cacheKey);
+
+        Redis::del($keys);
+    }
+
 
     public static function refreshCache(int $fromId = 1, int $toId = null): void
     {
