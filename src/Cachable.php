@@ -62,6 +62,9 @@ trait Cachable
 
     public function saveInCache() : mixed
     {
+        if (isset($this->id))
+            throw new Exception('id not set');
+
         $reflectionClass = new \ReflectionClass(self::class);
         $cacheKey = $reflectionClass->getShortName();
         Redis::set($cacheKey.":".$this->id, serialize($this));
@@ -76,6 +79,9 @@ trait Cachable
 
     public function saveFromCache() : void
     {
+        if (isset($this->id))
+            throw new Exception('id not set');
+
         $reflectionClass = new \ReflectionClass(self::class);
         $cacheKey = $reflectionClass->getShortName();
         $modelStr = Redis::get($cacheKey.":".$this->id);
@@ -89,6 +95,9 @@ trait Cachable
 
     public function updateInCacheOrRefresh() : mixed
     {
+        if (isset($this->id))
+            throw new Exception('id not set');
+
         $reflectionClass = new \ReflectionClass(self::class);
         $cacheKey = $reflectionClass->getShortName();
 
@@ -105,6 +114,9 @@ trait Cachable
 
     public function deleteInCache() : void
     {
+        if (isset($this->id))
+            throw new Exception('id not set');
+
         $reflectionClass = new \ReflectionClass(self::class);
         $cacheKey = $reflectionClass->getShortName();
         Redis::del( [ $cacheKey.":".$this->id ]);
@@ -112,6 +124,9 @@ trait Cachable
 
     public function deleteInCacheOrFail() : void
     {
+        if (isset($this->id))
+            throw new Exception('id not set');
+
         $reflectionClass = new \ReflectionClass(self::class);
         $cacheKey = $reflectionClass->getShortName();
 
