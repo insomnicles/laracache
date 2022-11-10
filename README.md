@@ -5,6 +5,8 @@
 
 A trait for accessing Laravel Eloquent models directly from Cache
 
+Source code packagist.
+
 ## Installation
 
 Via Composer
