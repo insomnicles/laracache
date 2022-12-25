@@ -2,6 +2,7 @@
 
 [![Latest Version on Packagist][ico-version]][link-packagist]
 [![Total Downloads][ico-downloads]][link-downloads]
+![StyleCIBanner](https://github.styleci.io/repos/473727868/shield)
 
 A trait for accessing Laravel Eloquent models directly from Cache
 
