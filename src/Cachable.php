@@ -18,7 +18,11 @@ trait Cachable
 
         if (empty($keys)) {
             return $models;
+<<<<<<< HEAD
         }
+=======
+	}
+>>>>>>> main
 
         for ($i = 0; $i < count($keys); $i++) {
             $keys[$i] = strstr($keys[$i], $cacheKey);
@@ -51,9 +55,16 @@ trait Cachable
 
         if (is_null($modelStr)) {
             throw new Exception('Model not found in cache');
+<<<<<<< HEAD
         } else {
             return unserialize($modelStr);
         }
+=======
+	}
+        else {
+            return unserialize($modelStr);
+	}
+>>>>>>> main
     }
 
     public static function findInCacheOrNew(int $id): mixed
