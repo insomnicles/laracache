@@ -16,8 +16,9 @@ trait Cachable
 
         $keys = Redis::keys($cacheKey.":*");
 
-        if (empty($keys))
+        if (empty($keys)) {
             return $models;
+	}
 
         for( $i = 0; $i < count($keys); $i++)
             $keys[$i] = strstr($keys[$i],$cacheKey);
@@ -45,10 +46,12 @@ trait Cachable
         $cacheKey = $reflectionClass->getShortName();
         $modelStr = Redis::get($cacheKey.":".$id);
 
-        if (is_null($modelStr))
+        if (is_null($modelStr)) {
             throw new Exception('Model not found in cache');
-        else
+	}
+        else {
             return unserialize($modelStr);
+	}
     }
 
     public static function findInCacheOrNew(int $id) : mixed
